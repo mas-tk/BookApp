@@ -1,0 +1,34 @@
+workflows:
+  ios-simulator-build:
+    name: iOS Simulator Build
+    max_build_duration: 60
+    instance_type: mac_mini
+    environment:
+      vars: {}
+        # 必要に応じて環境変数を定義
+      xcode: latest    # 例: 14.2 や latest など
+      # node: 16.13.0 など、Nodeバージョンを固定したい場合に指定
+    scripts:
+      # 1) 依存関係のインストール
+      - name: Install dependencies
+        script: |
+          npm install
+          cd ios
+          pod install
+          cd ..
+
+      # 2) iOSシミュレーター向けビルド
+      - name: Build for iOS simulator
+        script: |
+          xcodebuild \
+            -workspace ios/BookApp.xcworkspace \
+            -scheme BookApp \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' \
+            build
+    artifacts:
+      # ビルド成果物（.appファイル）を指定
+      - ios/BookApp.app
+      # もしXcodeの出力先が異なる場合はパスを合わせてください
+      # 例: build/ios/Build/Products/Debug-iphonesimulator/*.app
