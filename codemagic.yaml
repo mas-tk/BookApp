@@ -17,8 +17,10 @@ workflows:
             -scheme BookApp \
             -configuration Debug \
             -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.2' \
             -derivedDataPath build/ios \
             build
+
     artifacts:
       - build/ios/Build/Products/Debug-iphonesimulator/*.app
+
