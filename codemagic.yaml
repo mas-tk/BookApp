@@ -1,18 +1,24 @@
 workflows:
   ios-simulator-build:
     name: iOS Simulator Build
-    max_build_duration: 120
     environment:
-      vars: {}
       xcode: latest
-      node: latest
-      cocoapods: default
     scripts:
-      - name: Install dependencies and build iOS
+      - name: Install dependencies
         script: |
-          yarn install
-          cd ios && pod install
+          npm install
+          cd ios
+          pod install
           cd ..
-          npx react-native run-ios --no-packager --simulator="iPhone 14"
+      - name: Build for iOS simulator
+        script: |
+          xcodebuild \
+            -workspace ios/BookApp.xcworkspace \
+            -scheme BookApp \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' \
+            -derivedDataPath build/ios \
+            build
     artifacts:
-      - ios/build/Build/Products/Debug-iphonesimulator/*.app
+      - build/ios/Build/Products/Debug-iphonesimulator/*.app
