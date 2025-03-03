@@ -2,22 +2,13 @@ workflows:
   ios-simulator-build:
     name: iOS Simulator Build
     max_build_duration: 60
-    instance_type: mac_mini
     environment:
       vars: {}
         # 必要に応じて環境変数を定義
       xcode: latest    # 例: 14.2 や latest など
       # node: 16.13.0 など、Nodeバージョンを固定したい場合に指定
+      cocoapods: default
     scripts:
-      # 1) 依存関係のインストール
-      - name: Install dependencies
-        script: |
-          npm install
-          cd ios
-          pod install
-          cd ..
-
-      # 2) iOSシミュレーター向けビルド
       - name: Build for iOS simulator
         script: |
           xcodebuild \
