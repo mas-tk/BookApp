@@ -12,22 +12,26 @@ workflows:
         script: |
           yarn install
           cd ios && pod install && cd ..
-          # XCWorkspaceの存在を確認（デバッグ用）
+          
+      - name: Debug information
+        script: |
+          echo "Current directory: $(pwd)"
+          echo "iOS directory contents:"
           ls -la ios/
+          echo "Xcode version:"
+          xcodebuild -version
+          
       - name: Build for iOS simulator
         script: |
           cd ios
-          # ここでXCWorkspaceの名前を確認
-          WORKSPACE_NAME=$(ls | grep xcworkspace | head -n 1)
-          echo "Found workspace: $WORKSPACE_NAME"
-          
-          # 正しいWorkspace名を使用
+          # Adding more verbose output
           xcodebuild \
-            -workspace $WORKSPACE_NAME \
+            -workspace BookApp.xcworkspace \
             -scheme BookApp \
             -configuration Debug \
             -sdk iphonesimulator \
             -destination 'platform=iOS Simulator,OS=latest' \
+            -verbose \
             build
     artifacts:
       - ios/build/Build/Products/Debug-iphonesimulator/*.app
