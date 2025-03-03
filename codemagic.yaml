@@ -8,11 +8,30 @@ workflows:
       node: latest
       cocoapods: default
     scripts:
-      - name: Install dependencies and build iOS
+      - name: Install dependencies
         script: |
           yarn install
-          cd ios && pod install
-          cd ..
-          npx react-native run-ios --no-packager --simulator="iPhone 14"
+          cd ios && pod install && cd ..
+          
+      - name: Debug information
+        script: |
+          echo "Current directory: $(pwd)"
+          echo "iOS directory contents:"
+          ls -la ios/
+          echo "Xcode version:"
+          xcodebuild -version
+          
+      - name: Build for iOS simulator
+        script: |
+          cd ios
+          # Adding more verbose output
+          xcodebuild \
+            -workspace BookApp.xcworkspace \
+            -scheme BookApp \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,OS=latest' \
+            -verbose \
+            build
     artifacts:
       - ios/build/Build/Products/Debug-iphonesimulator/*.app
