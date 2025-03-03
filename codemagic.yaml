@@ -15,12 +15,10 @@ workflows:
           xcodebuild \
             -workspace ios/BookApp.xcworkspace \
             -scheme BookApp \
-            -configuration Debug \
+            -configuration Release \
             -sdk iphonesimulator \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.2' \
             -derivedDataPath build/ios \
             build
-
     artifacts:
-      - build/ios/Build/Products/Debug-iphonesimulator/*.app
-
+      - build/ios/Build/Products/Release-iphonesimulator/*.app
