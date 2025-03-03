@@ -1,25 +1,33 @@
 workflows:
   ios-simulator-build:
     name: iOS Simulator Build
-    max_build_duration: 60
+    max_build_duration: 120
     environment:
       vars: {}
-        # 必要に応じて環境変数を定義
-      xcode: latest    # 例: 14.2 や latest など
-      # node: 16.13.0 など、Nodeバージョンを固定したい場合に指定
+      xcode: latest
+      node: latest
       cocoapods: default
     scripts:
+      - name: Install dependencies
+        script: |
+          yarn install
+          cd ios && pod install && cd ..
+          # XCWorkspaceの存在を確認（デバッグ用）
+          ls -la ios/
       - name: Build for iOS simulator
         script: |
+          cd ios
+          # ここでXCWorkspaceの名前を確認
+          WORKSPACE_NAME=$(ls | grep xcworkspace | head -n 1)
+          echo "Found workspace: $WORKSPACE_NAME"
+          
+          # 正しいWorkspace名を使用
           xcodebuild \
-            -workspace ios/BookApp.xcworkspace \
+            -workspace $WORKSPACE_NAME \
             -scheme BookApp \
             -configuration Debug \
             -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' \
+            -destination 'platform=iOS Simulator,OS=latest' \
             build
     artifacts:
-      # ビルド成果物（.appファイル）を指定
-      - ios/BookApp.app
-      # もしXcodeの出力先が異なる場合はパスを合わせてください
-      # 例: build/ios/Build/Products/Debug-iphonesimulator/*.app
+      - ios/build/Build/Products/Debug-iphonesimulator/*.app
