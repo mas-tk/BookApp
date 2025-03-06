@@ -131,8 +131,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       <Image 
         source={book.cover} 
         style={[styles.cover, { 
-          width: FIRST_ROW_BOOK_WIDTH, 
-          height: FIRST_ROW_BOOK_WIDTH * 1.4,
+          width: FIRST_ROW_BOOK_WIDTH * 0.9, // 少し小さくする
+          height: FIRST_ROW_BOOK_WIDTH * 1.3, // 高さも少し調整
         }]} 
         resizeMode="cover"
       />
@@ -152,15 +152,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       <Image 
         source={book.cover} 
         style={[styles.cover, { 
-          width: OTHER_ROW_BOOK_WIDTH, 
-          height: OTHER_ROW_BOOK_WIDTH * 1.4,
+          width: OTHER_ROW_BOOK_WIDTH * 0.9, // 少し小さくする
+          height: OTHER_ROW_BOOK_WIDTH * 1.3, // 高さも少し調整
         }]} 
         resizeMode="cover"
       />
     </TouchableOpacity>
   );
 
-  // セクションタグのレンダリング関数
   const renderSectionTag = (title: string, isFirst: boolean = false) => (
     <View style={[styles.sectionTag, isFirst ? { backgroundColor: '#FCEB77' } : {}]}>
       <Text style={styles.sectionTagText}>{title}</Text>
@@ -181,32 +180,54 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
       {/* メインコンテンツエリア */}
       <View style={styles.mainContent}>
-        {/* 本棚の背景画像 */}
-        <ImageBackground
+        {/* 本棚の背景画像 - zIndexを低く設定して背面に配置 */}
+        <Image
           source={require('../assets/shelf_background.png')}
           style={styles.shelfBackground}
-          resizeMode="cover"
-        >
-          {/* 左上のランプ */}
-          <Image 
-            source={require('../assets/lamp_left.png')} 
-            style={styles.lampLeft}
-            resizeMode="contain"
-          />
+          resizeMode="stretch"
+        />
+        
+        {/* 左上のランプ */}
+        <Image 
+          source={require('../assets/lamp_left.png')} 
+          style={styles.lampLeft}
+          resizeMode="contain"
+        />
+        
+        {/* 右上のランプ */}
+        <Image 
+          source={require('../assets/lamp_right.png')} 
+          style={styles.lampRight}
+          resizeMode="contain"
+        />
           
-          {/* 右上のランプ */}
-          <Image 
-            source={require('../assets/lamp_right.png')} 
-            style={styles.lampRight}
-            resizeMode="contain"
-          />
-
-          <View style={styles.contentContainer}>
-            <View style={styles.sectionsWrapper}>
-              {/* 最初の行 - 注目の作品 */}
-              <View style={styles.section}>
+        <View style={styles.contentContainer}>
+          <View style={styles.sectionsWrapper}>
+            {/* 最初の行 - 注目の作品 */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>{categories[0].title}</Text>
+              </View>
+              
+              <View style={styles.shelfContainer}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.horizontalScrollView}
+                >
+                  {categories[0].books.map(book => renderFirstRowBook(book))}
+                </ScrollView>
+                
+                {/* 棚板 */}
+                <View style={styles.shelfBoard} />
+              </View>
+            </View>
+            
+            {/* 残りの行 */}
+            {categories.slice(1).map((category, index) => (
+              <View key={category.id} style={styles.section}>
                 <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>{categories[0].title}</Text>
+                  <Text style={styles.sectionTitle}>{category.title}</Text>
                 </View>
                 
                 <View style={styles.shelfContainer}>
@@ -215,58 +236,16 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.horizontalScrollView}
                   >
-                    {categories[0].books.map(book => renderFirstRowBook(book))}
+                    {category.books.map(book => renderOtherRowBook(book))}
                   </ScrollView>
                   
                   {/* 棚板 */}
                   <View style={styles.shelfBoard} />
-                  
-                  {/* セクションタグ */}
-                  <View style={styles.tagContainer}>
-                    {renderSectionTag('今月の一押し')}
-                    {renderSectionTag('注目の話題作')}
-                  </View>
                 </View>
               </View>
-              
-              {/* 残りの行 */}
-              {categories.slice(1).map((category, index) => (
-                <View key={category.id} style={styles.section}>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>{category.title}</Text>
-                  </View>
-                  
-                  <View style={styles.shelfContainer}>
-                    <ScrollView 
-                      horizontal 
-                      showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={styles.horizontalScrollView}
-                    >
-                      {category.books.map(book => renderOtherRowBook(book))}
-                    </ScrollView>
-                    
-                    {/* 棚板 */}
-                    <View style={styles.shelfBoard} />
-                    
-                    {/* セクションタグ */}
-                    <View style={styles.tagContainer}>
-                      {index === 0 ? 
-                        <>
-                          {renderSectionTag('TVで話題')}
-                          {renderSectionTag('女性に人気')}
-                        </> : 
-                        <>
-                          {renderSectionTag('人気NO.2')}
-                          {renderSectionTag('人気NO.1')}
-                        </>
-                      }
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
+            ))}
           </View>
-        </ImageBackground>
+        </View>
 
         {/* ラジオとティーカップをオーバーレイとして配置 */}
         <Image 
@@ -312,40 +291,48 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     flex: 1,
+    position: 'relative',
   },
   shelfBackground: {
-    flex: 1,
+    position: 'absolute',
     width: '120%',  // 横幅を120%に設定して左右がはみ出すようにする
-    height: '100%',
+    height: '100%', // 画面の高さいっぱいに表示
     alignSelf: 'center', // 中央に配置
+    zIndex: 1,      // 背面に配置するために低いzIndexを設定
   },
   lampLeft: {
     position: 'absolute',
     top: 0,
     left: 0,
-    width: 50,
-    height: 50,
+    width: 100,
+    height: 100,
     zIndex: 10,
   },
   lampRight: {
     position: 'absolute',
     top: 0,
     right: 0,
-    width: 50,
-    height: 50,
+    width: 100,
+    height: 100,
     zIndex: 10,
   },
   contentContainer: {
+    flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 40,
     height: '100%',
+    zIndex: 5,     // 背景よりも前面に表示
   },
   sectionsWrapper: {
     flex: 1,
     justifyContent: 'space-between',
+    paddingTop: 45, // 上部のランプの下に本を配置するためのパディング
+    paddingBottom: 10, // 下部の余白
   },
   section: {
-    marginBottom: 5,
+    flex: 1,
+    justifyContent: 'center',
+    marginBottom: 0,
+    maxHeight: '33%', // 各セクションの最大高さを制限
   },
   sectionHeader: {
     marginBottom: 6,
@@ -365,11 +352,13 @@ const styles = StyleSheet.create({
   horizontalScrollView: {
     paddingRight: 16,
     justifyContent: 'center',
+    paddingLeft: 8, // 左側のパディングを追加
   },
   shelfContainer: {
     position: 'relative',
-    marginBottom: 10,
+    marginBottom: 0,
     alignItems: 'center',
+    height: '65%', // 高さを少し小さく調整
   },
   shelfBoard: {
     position: 'absolute',
@@ -431,16 +420,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 70,
     height: 60,
-    left: 0,
-    bottom: 0,
+    left: 10,
+    bottom: 10,
     zIndex: 10,
   },
   teacupImage: {
     position: 'absolute',
     width: 60,
     height: 50,
-    right: 0,
-    bottom: 0,
+    right: 10,
+    bottom: 10,
     zIndex: 10,
   },
 });
