@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  StatusBar,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types/navigation';
@@ -15,7 +16,7 @@ import type { RootStackParamList } from '../types/navigation';
 // Home 画面の props 型定義
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SPACING = 10;
 const FIRST_ROW_BOOKS = 3;
 const OTHER_ROWS_BOOKS = 5;
@@ -53,16 +54,6 @@ const categories = [
         title: '仕事を辞めた魔女',
         cover: require('../assets/bookcovers/cover3.png'),
       },
-      {
-        id: '4',
-        title: '仕事を辞めた魔女',
-        cover: require('../assets/bookcovers/cover3.png'),
-      },
-      {
-        id: '5',
-        title: '～大人のための"もしも"童話再解釈～ ヘンゼルとグレーテル',
-        cover: require('../assets/bookcovers/cover1.png'),
-      },
     ]
   },
   {
@@ -93,16 +84,6 @@ const categories = [
         id: '3-2',
         title: '仕事を辞めた魔女',
         cover: require('../assets/bookcovers/cover3.png'),
-      },
-      {
-        id: '1-2',
-        title: '～大人のための"もしも"童話再解釈～ ヘンゼルとグレーテル',
-        cover: require('../assets/bookcovers/cover1.png'),
-      },
-      {
-        id: '2-2',
-        title: '夜の図書館',
-        cover: require('../assets/bookcovers/cover2.png'),
       },
     ]
   },
@@ -135,11 +116,6 @@ const categories = [
         title: '～大人のための"もしも"童話再解釈～ ヘンゼルとグレーテル',
         cover: require('../assets/bookcovers/cover1.png'),
       },
-      {
-        id: '2-4',
-        title: '夜の図書館',
-        cover: require('../assets/bookcovers/cover2.png'),
-      },
     ]
   }
 ];
@@ -157,10 +133,12 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         style={[styles.cover, { 
           width: FIRST_ROW_BOOK_WIDTH, 
           height: FIRST_ROW_BOOK_WIDTH * 1.4,
-          // 本が棚板に接しているようにする（transformを削除）
         }]} 
         resizeMode="cover"
       />
+      <Text style={styles.bookTitle} numberOfLines={1}>
+        {book.title.length > 10 ? book.title.substring(0, 10) + '...' : book.title}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -176,61 +154,132 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         style={[styles.cover, { 
           width: OTHER_ROW_BOOK_WIDTH, 
           height: OTHER_ROW_BOOK_WIDTH * 1.4,
-          // 本が棚板に接しているようにする（transformを削除）
         }]} 
         resizeMode="cover"
       />
     </TouchableOpacity>
   );
 
+  // セクションタグのレンダリング関数
+  const renderSectionTag = (title: string, isFirst: boolean = false) => (
+    <View style={[styles.sectionTag, isFirst ? { backgroundColor: '#FCEB77' } : {}]}>
+      <Text style={styles.sectionTagText}>{title}</Text>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <ImageBackground
-        source={require('../assets/shelf_background.png')}
-        style={styles.background}
-        resizeMode="repeat"
-      >
-        <ScrollView 
-          contentContainerStyle={styles.contentContainer}
-          showsVerticalScrollIndicator={false}
+      <StatusBar backgroundColor="#2A4000" barStyle="light-content" />
+      
+      {/* 背景色を緑色に設定 */}
+      <View style={styles.backgroundColorFill} />
+      
+      {/* ヘッダー部分 */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>絵本一覧</Text>
+      </View>
+
+      {/* メインコンテンツエリア */}
+      <View style={styles.mainContent}>
+        {/* 本棚の背景画像 */}
+        <ImageBackground
+          source={require('../assets/shelf_background.png')}
+          style={styles.shelfBackground}
+          resizeMode="cover"
         >
-          {/* 最初の行 - 1画面に3冊表示 */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{categories[0].title}</Text>
-          </View>
-          <View style={styles.shelfContainer}>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.horizontalScrollView}
-            >
-              {categories[0].books.map(book => renderFirstRowBook(book))}
-            </ScrollView>
-            {/* 棚板 */}
-            <View style={styles.shelfBoard} />
-          </View>
+          {/* 左上のランプ */}
+          <Image 
+            source={require('../assets/lamp_left.png')} 
+            style={styles.lampLeft}
+            resizeMode="contain"
+          />
           
-          {/* 残りの行 - 1画面に5冊表示 */}
-          {categories.slice(1).map(category => (
-            <View key={category.id}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{category.title}</Text>
+          {/* 右上のランプ */}
+          <Image 
+            source={require('../assets/lamp_right.png')} 
+            style={styles.lampRight}
+            resizeMode="contain"
+          />
+
+          <View style={styles.contentContainer}>
+            <View style={styles.sectionsWrapper}>
+              {/* 最初の行 - 注目の作品 */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>{categories[0].title}</Text>
+                </View>
+                
+                <View style={styles.shelfContainer}>
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.horizontalScrollView}
+                  >
+                    {categories[0].books.map(book => renderFirstRowBook(book))}
+                  </ScrollView>
+                  
+                  {/* 棚板 */}
+                  <View style={styles.shelfBoard} />
+                  
+                  {/* セクションタグ */}
+                  <View style={styles.tagContainer}>
+                    {renderSectionTag('今月の一押し')}
+                    {renderSectionTag('注目の話題作')}
+                  </View>
+                </View>
               </View>
-              <View style={styles.shelfContainer}>
-                <ScrollView 
-                  horizontal 
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.horizontalScrollView}
-                >
-                  {category.books.map(book => renderOtherRowBook(book))}
-                </ScrollView>
-                {/* 棚板 */}
-                <View style={styles.shelfBoard} />
-              </View>
+              
+              {/* 残りの行 */}
+              {categories.slice(1).map((category, index) => (
+                <View key={category.id} style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>{category.title}</Text>
+                  </View>
+                  
+                  <View style={styles.shelfContainer}>
+                    <ScrollView 
+                      horizontal 
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.horizontalScrollView}
+                    >
+                      {category.books.map(book => renderOtherRowBook(book))}
+                    </ScrollView>
+                    
+                    {/* 棚板 */}
+                    <View style={styles.shelfBoard} />
+                    
+                    {/* セクションタグ */}
+                    <View style={styles.tagContainer}>
+                      {index === 0 ? 
+                        <>
+                          {renderSectionTag('TVで話題')}
+                          {renderSectionTag('女性に人気')}
+                        </> : 
+                        <>
+                          {renderSectionTag('人気NO.2')}
+                          {renderSectionTag('人気NO.1')}
+                        </>
+                      }
+                    </View>
+                  </View>
+                </View>
+              ))}
             </View>
-          ))}
-        </ScrollView>
-      </ImageBackground>
+          </View>
+        </ImageBackground>
+
+        {/* ラジオとティーカップをオーバーレイとして配置 */}
+        <Image 
+          source={require('../assets/radio.png')} 
+          style={styles.radioImage}
+          resizeMode="contain"
+        />
+        <Image 
+          source={require('../assets/teacup.png')} 
+          style={styles.teacupImage}
+          resizeMode="contain"
+        />
+      </View>
     </View>
   );
 }
@@ -238,58 +287,160 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'transparent', // 背景を透明に
   },
-  background: {
-    flex: 1,
-    width: '100%',
+  backgroundColorFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#2A4000', // 緑色の背景色
   },
-  contentContainer: {
-    padding: 16,
-    paddingTop: 16,
+  header: {
+    backgroundColor: '#FFF',
+    paddingVertical: 5,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+    zIndex: 10,
   },
-  sectionHeader: {
-    marginBottom: 12,
-    marginTop: 16,
-  },
-  sectionTitle: {
+  headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  mainContent: {
+    flex: 1,
+  },
+  shelfBackground: {
+    flex: 1,
+    width: '120%',  // 横幅を120%に設定して左右がはみ出すようにする
+    height: '100%',
+    alignSelf: 'center', // 中央に配置
+  },
+  lampLeft: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 50,
+    height: 50,
+    zIndex: 10,
+  },
+  lampRight: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 50,
+    height: 50,
+    zIndex: 10,
+  },
+  contentContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 40,
+    height: '100%',
+  },
+  sectionsWrapper: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  section: {
+    marginBottom: 5,
+  },
+  sectionHeader: {
+    marginBottom: 6,
+    paddingHorizontal: 15,
+    paddingVertical: 4,
+    backgroundColor: 'rgba(88, 44, 19, 0.7)',
+    borderRadius: 20,
+    alignSelf: 'center',
+    minWidth: 120,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFF',
+    textAlign: 'center',
   },
   horizontalScrollView: {
     paddingRight: 16,
+    justifyContent: 'center',
   },
   shelfContainer: {
     position: 'relative',
-    marginBottom: 30, // 棚間の距離を調整
+    marginBottom: 10,
+    alignItems: 'center',
   },
   shelfBoard: {
     position: 'absolute',
-    bottom: 0,
+    bottom: -14,
     left: 0,
     right: 0,
-    height: 14, // 棚板を少し厚く
-    backgroundColor: 'rgba(139, 69, 19, 0.8)',  // 茶色の棚板
+    height: 16,
+    backgroundColor: 'rgba(139, 69, 19, 0.8)',
     borderBottomWidth: 2,
-    borderBottomColor: 'rgba(101, 67, 33, 0.9)', // より暗い茶色の縁取り
+    borderBottomColor: 'rgba(101, 67, 33, 0.9)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.5,
     shadowRadius: 2,
-    elevation: 4,
-    zIndex: -1,  // 本の後ろに表示
+    elevation: 5,
+    zIndex: -1,
   },
   bookContainer: {
     marginRight: SPACING,
-    marginBottom: 10, // 本と棚板の間の隙間をなくす
+    marginBottom: 10,
     alignItems: 'center',
   },
   cover: {
-    borderRadius: 2, // 角を少し柔らかく
-    // 本棚らしさを出すためにシャドウを追加
+    borderRadius: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.4,
+    shadowRadius: 2,
+    elevation: 4,
+  },
+  bookTitle: {
+    marginTop: 5,
+    fontSize: 11,
+    textAlign: 'center',
+    color: '#FFF',
+    fontWeight: 'bold',
+  },
+  tagContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 12,
+    paddingHorizontal: 10,
+    width: '100%',
+  },
+  sectionTag: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#DDD',
+  },
+  sectionTagText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  radioImage: {
+    position: 'absolute',
+    width: 70,
+    height: 60,
+    left: 0,
+    bottom: 0,
+    zIndex: 10,
+  },
+  teacupImage: {
+    position: 'absolute',
+    width: 60,
+    height: 50,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
   },
 });
